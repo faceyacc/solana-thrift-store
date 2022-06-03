@@ -1,0 +1,12 @@
+[
+    {
+      "id": 1,
+      "name": "Thrift Seattle",
+      "price": "0.09",
+      "description": "This is a drip-pack from Seattle finest Thrift stores!",
+      "image_url": "https://i.imgur.com/rVD8bjt.png",
+      "filename": "thrift_items",
+      "hash": "QmZJUV49hLEWjdHWLzejehVKcG7gGrKSWFX1RVLRtbxFCM"
+    }
+  ]
+  
