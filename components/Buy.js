@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Keypair, Transaction } from '@solana/web3.js';
+import { Keypair, PublicKey, Transaction } from '@solana/web3.js';
 import { findReference, FindReferenceError } from '@solana/pay';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { InfinitySpin } from 'react-loader-spinner';
 import IPFSDownload from './IpfsDownload';
-import { addOrder } from '../lib/api';
+import { addOrder, hasPurchased } from '../lib/api';
 
 const STATUS = {
   Initial: 'Initial',
@@ -19,6 +19,7 @@ export default function Buy({ itemID }) {
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState(STATUS.Initial); // Tracking transaction status
+  const [item, setItem] = useState(null); // IPFS hash & filename of the purchased item
 
   const order = useMemo(
     () => ({
@@ -29,6 +30,7 @@ export default function Buy({ itemID }) {
     [publicKey, orderID, itemID]
   );
 
+  // Fetch the transaction object from the server (done to avoid tempering)
   const processTransaction = async () => {
     setLoading(true);
     const txResponse = await fetch('../api/createTransaction', {
@@ -55,6 +57,26 @@ export default function Buy({ itemID }) {
       setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+
+    // Check if address already has purchased this item
+    // If so, fetch the item and set paid to true
+    // Async func to avoid blocking the UI
+    async function checkPurchased() {
+      const purchased = await hasPurchased(publicKey, itemID);
+      if (purchased) {
+        setStatus(STATUS.Paid);
+        console.log("Address has already purchased this item!");
+      }
+    }
+    checkPurchased();
+  }, [publicKey, itemID]);
+
+
+
+
 
   useEffect(() => {
     // Check if transaction was confirmed
