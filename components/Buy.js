@@ -62,12 +62,12 @@ export default function Buy({ itemID }) {
       setLoading(true);
       const interval = setInterval(async () => {
         try {
+          // Look for orderID on the blockchain
           const result = await findReference(connection, orderID);
           console.log('Finding tx reference', result.confirmationStatus);
-          if (
-            result.confirmationStatus === 'confirmed' ||
-            result.confirmationStatus === 'finalized'
-          ) {
+
+          // If the transaction is confirmed or finalized, the payment was successful
+          if (result.confirmationStatus === 'confirmed' || result.confirmationStatus === 'finalized') {
             clearInterval(interval);
             setStatus(STATUS.Paid);
             setLoading(false);
@@ -115,7 +115,7 @@ export default function Buy({ itemID }) {
           className="buy-button"
           onClick={processTransaction}
         >
-          Buy now 🠚
+          Buy now 🛍️
         </button>
       )}
     </div>

@@ -1,17 +1,12 @@
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import {
-  clusterApiUrl,
-  Connection,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-  LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+import { clusterApiUrl, Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { createTransferCheckedInstruction, getAssociatedTokenAddress, getMint } from "@solana/spl-token";
 import BigNumber from "bignumber.js";
 import products from "./products.json";
 
 // Make sure you replace this with your wallet address!
-const sellerAddress = '9ihTHzzjjmsvM1qyiVt6UfFqPboEhEoUD7CiapQy1g1K'
+const usdcAddress = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
+const sellerAddress = '9ihTHzzjjmsvM1qyiVt6UfFqPboEhEoUD7CiapQy1g1K';
 const sellerPublicKey = new PublicKey(sellerAddress);
 
 const createTransaction = async (req, res) => {
@@ -44,12 +39,19 @@ const createTransaction = async (req, res) => {
     // Convert our price to the correct format
     const bigAmount = BigNumber(itemPrice);
     const buyerPublicKey = new PublicKey(buyer);
+
     const network = WalletAdapterNetwork.Devnet;
     const endpoint = clusterApiUrl(network);
     const connection = new Connection(endpoint);
 
+    const buyerUsdcAddress = await getAssociatedTokenAddress(usdcAddress, buyerPublicKey);
+    const shopUsdcAddress = await getAssociatedTokenAddress(usdcAddress, sellerPublicKey);  
+
     // A blockhash is sort of like an ID for a block. It lets you identify each block.
     const { blockhash } = await connection.getLatestBlockhash("finalized");
+
+    // This is new, we're getting the mint address of the token we want to transfer
+    const usdcMint = await getMint(connection, usdcAddress);
     
     // The first two things we need - a recent block ID 
     // and the public key of the fee payer 
@@ -60,16 +62,20 @@ const createTransaction = async (req, res) => {
 
     // This is the "action" that the transaction will take
     // We're just going to transfer some SOL
-    const transferInstruction = SystemProgram.transfer({
-      fromPubkey: buyerPublicKey,
-      // Lamports are the smallest unit of SOL, like Gwei with Ethereum
-      lamports: bigAmount.multipliedBy(LAMPORTS_PER_SOL).toNumber(), 
-      toPubkey: sellerPublicKey,
-    });
 
-    // We're adding more instructions to the transaction
+    const transferInstruction = createTransferCheckedInstruction(
+      buyerUsdcAddress,
+      usdcAddress,
+      shopUsdcAddress,
+      buyerPublicKey,
+      bigAmount.toNumber() * 10 ** (await usdcMint).decimals,
+      usdcMint.decimals // The toke could have any number of decimals
+    );
+
+
+    // Add insturctions to transaction
     transferInstruction.keys.push({
-      // We'll use our OrderId to find this transaction later
+      // Use the OrderId to find the transaction later
       pubkey: new PublicKey(orderID), 
       isSigner: false,
       isWritable: false,
@@ -77,7 +83,7 @@ const createTransaction = async (req, res) => {
 
     tx.add(transferInstruction);
   
-    // Formatting our transaction
+    // Formatting the transaction
     const serializedTransaction = tx.serialize({
       requireAllSignatures: false,
     });
