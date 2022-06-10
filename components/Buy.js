@@ -45,6 +45,7 @@ export default function Buy({ itemID }) {
     const tx = Transaction.from(Buffer.from(txData.transaction, 'base64'));
     console.log('Tx data is', tx);
 
+    // Attempt to send transaction to the network
     try {
       const txHash = await sendTransaction(tx, connection);
       console.log(
