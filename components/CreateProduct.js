@@ -116,7 +116,7 @@ const CreateProduct = () => {
               }}
               disabled={uploading}
             >
-              Create Product
+              Upload Thrifts!
             </button>
           </div>
         </div>
