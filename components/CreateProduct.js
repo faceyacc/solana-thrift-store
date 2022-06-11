@@ -62,6 +62,8 @@ const CreateProduct = () => {
           </header>
 
           <div className={styles.form_container}>
+            
+            
             <input
               type="file"
               className={styles.input}
