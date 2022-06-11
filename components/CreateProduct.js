@@ -58,7 +58,7 @@ const CreateProduct = () => {
       <div className={styles.create_product_container}>
         <div className={styles.create_product_form}>
           <header className={styles.header}>
-            <h1>Create Product</h1>
+            <h1>Thrift Details</h1>
           </header>
 
           <div className={styles.form_container}>
@@ -116,7 +116,7 @@ const CreateProduct = () => {
               }}
               disabled={uploading}
             >
-              Upload Thrifts!
+              Upload Thrift!
             </button>
           </div>
         </div>

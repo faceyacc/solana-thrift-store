@@ -58,7 +58,7 @@ const App = () => {
 
           {isOwner && (
             <button className="create-product-button" onClick={() => setCreating(!creating)}>
-              { creating ? "Close" : "Create Product" }
+              { creating ? "Close" : "Upload Thrift!" }
             </button>
           )}
         </header>
